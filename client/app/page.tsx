@@ -50,8 +50,12 @@ export default function Home() {
       setCvData(formattedCV);
       setCvId(newCvId);
 
-    } catch (err: any) {
-      setError(err.message || 'Failed to process your CV. Please try again.');
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
       console.error('Upload error:', err);
     } finally {
       setIsLoading(false);
@@ -90,8 +94,12 @@ export default function Home() {
       setOriginalText(data.originalText || ''); // Assuming originalText might be stored
       setView('main'); // Switch back to the main view to show the preview
 
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred while fetching the CV.');
+      }
     } finally {
       setIsLoading(false);
     }
