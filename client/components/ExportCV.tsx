@@ -32,9 +32,10 @@ export default function ExportCV({ cvId, cvData, onClose }: ExportCVProps) {
         return;
       }
 
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       const endpoint = type === 'docx'
-        ? `http://localhost:5000/api/cv/${cvId}/export-docx`
-        : `http://localhost:5000/api/cv/${cvId}/export`;
+        ? `${apiUrl}/api/cv/${cvId}/export-docx`
+        : `${apiUrl}/api/cv/${cvId}/export`;
 
       const response = await fetch(endpoint);
 
