@@ -22,7 +22,8 @@ export default function SavedCVs({ onViewCV }: SavedCVsProps) {
   useEffect(() => {
     const fetchSavedCVs = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/cv/all');
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+        const response = await fetch(`${apiUrl}/api/cv/all`);
         if (!response.ok) {
           throw new Error('Failed to fetch saved CVs');
         }
