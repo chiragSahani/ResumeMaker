@@ -1,7 +1,14 @@
 import { motion } from 'framer-motion';
-import { FileText, Sparkles } from 'lucide-react';
+import { FileText, Sparkles, Briefcase, Upload } from 'lucide-react';
 
-export default function Header() {
+type View = 'main' | 'saved';
+
+interface HeaderProps {
+  onToggleView: (view: View) => void;
+  currentView: View;
+}
+
+export default function Header({ onToggleView, currentView }: HeaderProps) {
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
@@ -24,11 +31,22 @@ export default function Header() {
             </div>
           </div>
           
-          <div className="hidden md:flex items-center space-x-6 text-sm text-slate-600">
-            <span>✓ Professional Formatting</span>
-            <span>✓ Inline Editing</span>
-            <span>✓ PDF Export</span>
-          </div>
+          <button
+            onClick={() => onToggleView(currentView === 'main' ? 'saved' : 'main')}
+            className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-100 transition-colors"
+          >
+            {currentView === 'main' ? (
+              <>
+                <Briefcase className="h-4 w-4" />
+                <span>View Saved</span>
+              </>
+            ) : (
+              <>
+                <Upload className="h-4 w-4" />
+                <span>Upload New</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
     </motion.header>
