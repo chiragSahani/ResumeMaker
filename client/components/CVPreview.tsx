@@ -9,12 +9,13 @@ import CVDisplay from './CVDisplay';
 import ExportCV from './ExportCV';
 
 interface CVPreviewProps {
+  cvId: string;
   cvData: CVData;
   originalText: string;
   onUpdateCV: (data: CVData) => void;
 }
 
-export default function CVPreview({ cvData, originalText, onUpdateCV }: CVPreviewProps) {
+export default function CVPreview({ cvId, cvData, originalText, onUpdateCV }: CVPreviewProps) {
   const [activeTab, setActiveTab] = useState<'preview' | 'edit' | 'original'>('preview');
   const [showExport, setShowExport] = useState(false);
 
@@ -54,7 +55,7 @@ export default function CVPreview({ cvData, originalText, onUpdateCV }: CVPrevie
               className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Download className="h-4 w-4" />
-              <span>Export PDF</span>
+              <span>Export</span>
             </motion.button>
           </div>
         </div>
@@ -115,6 +116,7 @@ export default function CVPreview({ cvData, originalText, onUpdateCV }: CVPrevie
       {/* Export Modal */}
       {showExport && (
         <ExportCV
+          cvId={cvId}
           cvData={cvData}
           onClose={() => setShowExport(false)}
         />

@@ -6,7 +6,9 @@ const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fet
 
 require('dotenv').config();
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+// The GEMINI_API_URL should be set in your .env file
+// Example: https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent
+const GEMINI_API_URL = process.env.GEMINI_API_URL;
 
 async function extractText(file) {
   const ext = path.extname(file.originalname).toLowerCase();
@@ -47,9 +49,9 @@ ${text}
 Formatted CV:
 `;
 
-  const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+  const apiUrl = `${GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent'}?key=${process.env.GEMINI_API_KEY}`;
 
-  const response = await fetch(`${GEMINI_API_URL}?key=${process.env.GEMINI_API_KEY}`, {
+  const response = await fetch(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

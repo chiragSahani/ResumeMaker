@@ -2,56 +2,88 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Download, FileText, Loader2 } from 'lucide-react';
+import { FileDown, FileText, Loader2, X } from 'lucide-react';
 import { CVData } from '@/types/cv';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
+type ExportType = 'pdf' | 'docx' | 'txt';
+
 interface ExportCVProps {
+  cvId: string;
   cvData: CVData;
   onClose: () => void;
 }
 
-export default function ExportCV({ cvData, onClose }: ExportCVProps) {
-  const [isExporting, setIsExporting] = useState(false);
+export default function ExportCV({ cvId, cvData, onClose }: ExportCVProps) {
+  const [isExporting, setIsExporting] = useState<ExportType | null>(null);
 
-  const exportToPDF = async () => {
-    setIsExporting(true);
+  const handleExport = async (type: ExportType) => {
+    if (!cvId) {
+      alert('Cannot export without a valid CV ID.');
+      return;
+    }
+
+    setIsExporting(type);
+
     try {
-      // Create a temporary div with the CV content
+      if (type === 'pdf') {
+        await exportToPDFClientSide();
+        return;
+      }
+
+      const endpoint = type === 'docx'
+        ? `http://localhost:5000/api/cv/${cvId}/export-docx`
+        : `http://localhost:5000/api/cv/${cvId}/export`;
+
+      const response = await fetch(endpoint);
+
+      if (!response.ok) {
+        throw new Error(`Failed to export ${type}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${cvData.header.name.replace(/\s+/g, '_')}_CV.${type}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+
+    } catch (error) {
+      console.error(`Export failed for ${type}:`, error);
+      alert(`Failed to export CV as ${type}. Please try again.`);
+    } finally {
+      setIsExporting(null);
+    }
+  };
+
+  const exportToPDFClientSide = async () => {
+    // This function generates the PDF on the client side
+    // It gives more control over the styling
+    try {
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = generatePDFContent(cvData);
       tempDiv.style.cssText = `
-        position: absolute;
-        left: -9999px;
-        top: 0;
-        width: 210mm;
-        min-height: 297mm;
-        background: white;
-        font-family: 'Times', 'Times New Roman', serif;
-        padding: 20mm;
-        box-sizing: border-box;
+        position: absolute; left: -9999px; top: 0; width: 210mm;
+        min-height: 297mm; background: white; font-family: 'Times', 'Times New Roman', serif;
+        padding: 20mm; box-sizing: border-box;
       `;
-      
       document.body.appendChild(tempDiv);
-      
-      // Generate PDF
-      const canvas = await html2canvas(tempDiv, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true
-      });
-      
+
+      const canvas = await html2canvas(tempDiv, { scale: 2, useCORS: true, allowTaint: true });
       const pdf = new jsPDF('p', 'mm', 'a4');
       const imgWidth = 210;
       const pageHeight = 297;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       let heightLeft = imgHeight;
       let position = 0;
-      
+
       pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
-      
+
       while (heightLeft >= 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
@@ -59,17 +91,12 @@ export default function ExportCV({ cvData, onClose }: ExportCVProps) {
         heightLeft -= pageHeight;
       }
       
-      // Clean up
       document.body.removeChild(tempDiv);
-      
-      // Download
       pdf.save(`${cvData.header.name.replace(/\s+/g, '_')}_CV.pdf`);
-      
+
     } catch (error) {
-      console.error('Export failed:', error);
-      alert('Failed to export CV. Please try again.');
-    } finally {
-      setIsExporting(false);
+      console.error('Client-side PDF export failed:', error);
+      throw error; // Re-throw to be caught by the main handler
     }
   };
 
@@ -162,50 +189,76 @@ export default function ExportCV({ cvData, onClose }: ExportCVProps) {
           exit={{ opacity: 0, scale: 0.95 }}
           className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-slate-800">Export CV as PDF</h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-semibold text-slate-800">Export CV</h3>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-slate-100 rounded-full transition-colors"
             >
               <X className="h-5 w-5 text-slate-600" />
             </button>
           </div>
 
-          <div className="space-y-4">
-            <div className="bg-slate-50 rounded-lg p-4 flex items-center space-x-3">
-              <div className="bg-blue-100 p-2 rounded">
-                <FileText className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="font-medium text-slate-800">Professional PDF Format</p>
-                <p className="text-sm text-slate-600">Palatino Linotype font, optimized for printing</p>
-              </div>
-            </div>
-
-            <div className="space-y-2 text-sm text-slate-600">
-              <p>✓ Clean, professional layout</p>
-              <p>✓ Optimized for ATS systems</p>
-              <p>✓ Print-ready format</p>
-              <p>✓ All sections included</p>
-            </div>
-
+          <div className="space-y-3">
+            {/* PDF Export Button */}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={exportToPDF}
-              disabled={isExporting}
-              className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
+              onClick={() => handleExport('pdf')}
+              disabled={!!isExporting}
+              className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-60 flex items-center justify-center space-x-2"
             >
-              {isExporting ? (
+              {isExporting === 'pdf' ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                   <span>Generating PDF...</span>
                 </>
               ) : (
                 <>
-                  <Download className="h-4 w-4" />
+                  <FileDown className="h-5 w-5" />
                   <span>Download PDF</span>
+                </>
+              )}
+            </motion.button>
+
+            {/* DOCX Export Button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleExport('docx')}
+              disabled={!!isExporting}
+              className="w-full bg-slate-700 text-white py-3 px-6 rounded-lg font-medium hover:bg-slate-800 transition-colors disabled:opacity-60 flex items-center justify-center space-x-2"
+            >
+              {isExporting === 'docx' ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>Generating DOCX...</span>
+                </>
+              ) : (
+                <>
+                  <FileDown className="h-5 w-5" />
+                  <span>Download DOCX</span>
+                </>
+              )}
+            </motion.button>
+
+            {/* TXT Export Button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleExport('txt')}
+              disabled={!!isExporting}
+              className="w-full bg-slate-200 text-slate-800 py-3 px-6 rounded-lg font-medium hover:bg-slate-300 transition-colors disabled:opacity-60 flex items-center justify-center space-x-2"
+            >
+              {isExporting === 'txt' ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>Generating TXT...</span>
+                </>
+              ) : (
+                <>
+                  <FileText className="h-5 w-5" />
+                  <span>Download TXT</span>
                 </>
               )}
             </motion.button>

@@ -19,16 +19,31 @@ router.post('/upload', upload.single('cv'), async (req, res) => {
     const formatted = await parseAndFormatCV(file);
     fs.unlinkSync(file.path);
 
+    // Try to parse the formatted CV string from the AI
+    let formattedJson;
+    try {
+      formattedJson = JSON.parse(formatted);
+    } catch (parseError) {
+      console.error('JSON Parse Error:', parseError);
+      throw new Error('AI returned an invalid format. Please try again.');
+    }
+
     const newCV = new CVModel({
       originalFileName: file.originalname,
+      // We save the original string from the AI to the DB
       formattedCV: formatted
     });
     await newCV.save();
 
-    res.json({ formatted });
+    // We send the parsed JSON object and the new CV's ID to the client
+    res.json({
+      cvId: newCV._id,
+      formatted: formattedJson,
+    });
+
   } catch (err) {
-    console.error('Upload Error:', err); // 👈 Show detailed error in console
-    res.status(500).json({ error: err.message || 'Server error' }); // 👈 Return real error
+    console.error('Upload Error:', err);
+    res.status(500).json({ error: err.message || 'Server error' });
   }
 });
 
@@ -38,7 +53,6 @@ router.get('/all', async (req, res) => {
     const cvs = await CVModel.find().sort({ uploadDate: -1 });
     res.json(cvs);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Failed to fetch CVs' });
   }
 });
@@ -50,7 +64,6 @@ router.get('/:id', async (req, res) => {
     if (!cv) return res.status(404).json({ error: 'CV not found' });
     res.json(cv);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Failed to fetch CV' });
   }
 });
@@ -67,7 +80,6 @@ router.get('/:id/export', async (req, res) => {
     res.setHeader('Content-Type', 'text/plain');
     res.send(cv.formattedCV);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Failed to export CV' });
   }
 });
