@@ -19,12 +19,14 @@ router.post('/upload', upload.single('cv'), async (req, res) => {
     const formatted = await parseAndFormatCV(file);
     fs.unlinkSync(file.path);
 
-    // Try to parse the formatted CV string from the AI
+    // Clean the AI response string and parse it.
+    // LLMs often wrap JSON in ```json ... ```, so we remove it.
     let formattedJson;
     try {
-      formattedJson = JSON.parse(formatted);
+      const cleanedString = formatted.replace(/^```json\n/, '').replace(/\n```$/, '');
+      formattedJson = JSON.parse(cleanedString);
     } catch (parseError) {
-      console.error('JSON Parse Error:', parseError);
+      console.error('JSON Parse Error:', parseError, 'Raw response:', formatted);
       throw new Error('AI returned an invalid format. Please try again.');
     }
 
