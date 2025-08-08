@@ -6,6 +6,17 @@ const mongoose = require('mongoose');
 const cvRoutes = require('./routes/cvRoutes');
 
 dotenv.config();
+
+// --- Environment Variable Validation ---
+const requiredEnvVars = ['MONGO_URI', 'GEMINI_API_KEY'];
+const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingEnvVars.length > 0) {
+  console.error(`❌ FATAL ERROR: Missing required environment variables: ${missingEnvVars.join(', ')}`);
+  process.exit(1); // Exit the process with an error code
+}
+// ------------------------------------
+
 const app = express();
 app.use(cors());
 app.use(express.json());
