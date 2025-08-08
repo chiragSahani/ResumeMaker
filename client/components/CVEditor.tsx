@@ -17,13 +17,17 @@ interface CVEditorProps {
 export default function CVEditor({ cvData, onUpdateCV }: CVEditorProps) {
   const [editData, setEditData] = useState<CVData>(cvData);
 
-  const updateField = (section: keyof CVData, field: string, value: any) => {
+  const updateField = <S extends 'header' | 'personalDetails'>(
+    section: S,
+    field: keyof CVData[S],
+    value: any
+  ) => {
     setEditData(prev => ({
       ...prev,
       [section]: {
         ...prev[section],
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   };
 
