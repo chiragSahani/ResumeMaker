@@ -20,7 +20,7 @@ export default function CVEditor({ cvData, onUpdateCV }: CVEditorProps) {
   const updateField = <S extends 'header' | 'personalDetails'>(
     section: S,
     field: keyof CVData[S],
-    value: any
+    value: string | string[]
   ) => {
     setEditData(prev => ({
       ...prev,
@@ -46,7 +46,11 @@ export default function CVEditor({ cvData, onUpdateCV }: CVEditorProps) {
     }));
   };
 
-  const updateExperience = (index: number, field: keyof ExperienceItem, value: any) => {
+  const updateExperience = (
+    index: number,
+    field: keyof ExperienceItem,
+    value: string | string[]
+  ) => {
     setEditData(prev => ({
       ...prev,
       experience: prev.experience.map((exp, i) => 

@@ -53,20 +53,23 @@ export default function FileUpload({ onFileUpload }: FileUploadProps) {
   return (
     <div className="max-w-2xl mx-auto">
       <motion.div
-        {...getRootProps()}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className={`
-          border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300
-          ${isDragActive 
-            ? 'border-blue-400 bg-blue-50' 
-            : 'border-slate-300 bg-white hover:border-blue-400 hover:bg-slate-50'
-          }
-        `}
+        className="transition-transform duration-200"
       >
-        <input {...getInputProps()} />
-        
-        <div className="space-y-4">
+        <div
+          {...getRootProps()}
+          className={`
+            border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300
+            ${isDragActive
+              ? 'border-blue-400 bg-blue-50'
+              : 'border-slate-300 bg-white hover:border-blue-400 hover:bg-slate-50'
+            }
+          `}
+        >
+          <input {...getInputProps()} />
+
+          <div className="space-y-4">
           <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center transition-colors
             ${isDragActive ? 'bg-blue-100' : 'bg-slate-100'}`}>
             <Upload className={`h-8 w-8 ${isDragActive ? 'text-blue-600' : 'text-slate-600'}`} />
