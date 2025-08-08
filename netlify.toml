@@ -1,0 +1,15 @@
+# This file configures the build settings for Netlify.
+# It specifies that our Next.js app is in the 'client' directory.
+
+[build]
+  # Base directory: The subdirectory to run the build command in.
+  base = "client"
+
+  # Build command: The command to build the site.
+  # Netlify will run 'npm install' first automatically.
+  command = "npm run build"
+
+  # Publish directory: The directory that contains the built site.
+  # This is relative to the root of the repository, but since the base is 'client',
+  # Netlify correctly resolves this to 'client/.next'.
+  publish = ".next"
