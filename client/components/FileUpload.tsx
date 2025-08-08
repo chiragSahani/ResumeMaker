@@ -15,7 +15,7 @@ export default function FileUpload({ onFileUpload }: FileUploadProps) {
 
   const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
     setError(null);
-    
+
     if (rejectedFiles.length > 0) {
       setError('Please upload a valid PDF, DOCX, XLS, or XLSX file.');
       return;
@@ -33,10 +33,10 @@ export default function FileUpload({ onFileUpload }: FileUploadProps) {
       'application/pdf': ['.pdf'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
       'application/vnd.ms-excel': ['.xls'],
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx']
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
     },
     multiple: false,
-    maxSize: 10 * 1024 * 1024 // 10MB
+    maxSize: 10 * 1024 * 1024, // 10MB
   });
 
   const handleUpload = () => {
@@ -59,32 +59,31 @@ export default function FileUpload({ onFileUpload }: FileUploadProps) {
       >
         <div
           {...getRootProps()}
-          className={`
-            border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300
-            ${isDragActive
-              ? 'border-blue-400 bg-blue-50'
-              : 'border-slate-300 bg-white hover:border-blue-400 hover:bg-slate-50'
-            }
+          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300
+            ${isDragActive ? 'border-blue-400 bg-blue-50' : 'border-slate-300 bg-white hover:border-blue-400 hover:bg-slate-50'}
           `}
         >
           <input {...getInputProps()} />
 
           <div className="space-y-4">
-          <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center transition-colors
-            ${isDragActive ? 'bg-blue-100' : 'bg-slate-100'}`}>
-            <Upload className={`h-8 w-8 ${isDragActive ? 'text-blue-600' : 'text-slate-600'}`} />
-          </div>
-          
-          <div>
-            <h3 className="text-lg font-semibold text-slate-800 mb-2">
-              {isDragActive ? 'Drop your CV here' : 'Upload your CV'}
-            </h3>
-            <p className="text-slate-600 mb-4">
-              Drag and drop your file here, or click to select
-            </p>
-            <p className="text-sm text-slate-500">
-              Supports PDF, DOCX, XLS, XLSX • Max size: 10MB
-            </p>
+            <div
+              className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center transition-colors
+              ${isDragActive ? 'bg-blue-100' : 'bg-slate-100'}`}
+            >
+              <Upload className={`h-8 w-8 ${isDragActive ? 'text-blue-600' : 'text-slate-600'}`} />
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                {isDragActive ? 'Drop your CV here' : 'Upload your CV'}
+              </h3>
+              <p className="text-slate-600 mb-4">
+                Drag and drop your file here, or click to select
+              </p>
+              <p className="text-sm text-slate-500">
+                Supports PDF, DOCX, XLS, XLSX • Max size: 10MB
+              </p>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -125,7 +124,7 @@ export default function FileUpload({ onFileUpload }: FileUploadProps) {
               <X className="h-5 w-5 text-slate-600" />
             </button>
           </div>
-          
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
